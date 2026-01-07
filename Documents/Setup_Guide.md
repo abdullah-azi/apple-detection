@@ -33,9 +33,14 @@
 - Basic understanding of machine learning concepts (helpful but not required)
 
 ### 1.2 Required Software
-- **Python 3.8 or higher** (3.9+ recommended)
+- **Python 3.8 or higher** (3.9-3.12 recommended, 3.13 may have compatibility issues)
 - **Git** (for version control, optional)
 - **Text Editor/IDE** (VS Code, PyCharm, or any editor)
+
+**Note for Python 3.13 users:**
+- Python 3.13 is very new and some packages may not have full support yet
+- If you encounter compatibility issues, consider using Python 3.11 or 3.12
+- Most packages should work, but you may need to install from source for some
 
 ### 1.3 Optional but Recommended
 - **CUDA-capable GPU** (for faster training)
@@ -67,6 +72,13 @@
 ```bash
 python --version
 # Should show Python 3.8 or higher
+# Note: Python 3.13 is very new - some packages may need updates
+```
+
+#### Check Python Version Details
+```bash
+python -c "import sys; print(f'Python {sys.version}')"
+# This shows full version info including build details
 ```
 
 #### Check GPU (if available)
@@ -219,7 +231,26 @@ albumentations>=1.3.0
 pip install -r requirements.txt
 ```
 
-#### Install with GPU Support (PyTorch)
+#### Install PyTorch (CPU-Only Setup)
+
+**For CPU-only systems (Recommended for your setup):**
+```bash
+# Install CPU-only PyTorch (smaller download, faster installation)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+```
+
+**Alternative (standard CPU version):**
+```bash
+pip install torch torchvision
+```
+
+**Note for CPU-only systems:**
+- CPU-only PyTorch is smaller and installs faster
+- Training will be slower but fully functional
+- Use smaller batch sizes (4-8) and smaller models
+- Expect longer training times (hours to days depending on dataset size)
+
+#### Install with GPU Support (If you have NVIDIA GPU)
 
 **For CUDA 11.8:**
 ```bash
@@ -229,11 +260,6 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 **For CUDA 12.1:**
 ```bash
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
-```
-
-**For CPU-only:**
-```bash
-pip install torch torchvision
 ```
 
 **Check PyTorch installation:**
@@ -379,6 +405,52 @@ Verifying Setup...
 
 Create `configs/config.yaml`:
 
+#### For CPU-Only Systems (Your Setup)
+```yaml
+# Data Configuration
+data:
+  root_dir: "data"
+  images:
+    train: "data/images/train"
+    val: "data/images/val"
+    test: "data/images/test"
+  annotations:
+    train: "data/annotations/train"
+    val: "data/annotations/val"
+    test: "data/annotations/test"
+  annotation_format: "yolo"
+  class_names: ["apple"]
+  num_classes: 1
+
+# Model Configuration (CPU-optimized)
+model:
+  architecture: "yolo"
+  version: "v5"
+  size: "n"  # Use "n" (nano) for CPU - smallest and fastest
+  pretrained: true
+  input_size: [416, 416]  # Smaller input size for CPU (640x640 is slower)
+
+# Training Configuration (CPU-optimized)
+training:
+  num_epochs: 50  # Start with fewer epochs for testing
+  batch_size: 4  # Small batch size for CPU (4-8 recommended)
+  learning_rate: 0.001
+  optimizer: "adam"
+  num_workers: 2  # Use 2 for dual-core CPU (your i5-6200U)
+
+# Paths
+paths:
+  checkpoints_dir: "checkpoints"
+  results_dir: "results"
+  logs_dir: "logs"
+
+# Hardware (CPU-only)
+hardware:
+  device: "cpu"  # Explicitly set to CPU
+  pin_memory: false  # Disable for CPU
+```
+
+#### For GPU Systems (Alternative)
 ```yaml
 # Data Configuration
 data:
@@ -399,7 +471,7 @@ data:
 model:
   architecture: "yolo"
   version: "v5"
-  size: "s"
+  size: "s"  # Can use larger models with GPU
   pretrained: true
   input_size: [640, 640]
 
@@ -610,9 +682,71 @@ python test_setup.py
 
 ---
 
-## 10. Troubleshooting
+## 10. CPU-Only Setup Guide
 
-### 10.1 Common Issues
+### 10.1 CPU-Only Specific Instructions
+
+#### Your System Specifications
+- **CPU**: Intel Core i5-6200U (2 cores, 4 threads)
+- **RAM**: 16GB (good for CPU training)
+- **GPU**: Intel HD Graphics 520 (not suitable for ML)
+- **Storage**: 238GB SSD (sufficient)
+- **Python**: 3.13.7 (very new version - see compatibility notes below)
+
+#### Optimized Settings for Your System
+
+**1. PyTorch Installation:**
+```bash
+# Install CPU-only version (recommended)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+```
+
+**2. Configuration Settings:**
+- **Model Size**: Use `"n"` (nano) - smallest and fastest
+- **Batch Size**: 4-8 (start with 4)
+- **Input Size**: 416x416 (instead of 640x640)
+- **Num Workers**: 2 (matches your 2 cores)
+- **Device**: Explicitly set to `"cpu"`
+
+**3. Performance Expectations:**
+- **Training Time**: Expect 2-6 hours per epoch (depending on dataset size)
+- **Inference Time**: 1-3 seconds per image
+- **Memory Usage**: ~4-8GB RAM during training
+
+**4. Tips for CPU Training:**
+- Start with small dataset (50-100 images) for testing
+- Use smaller model (nano size)
+- Reduce input image size (416x416)
+- Use small batch size (4)
+- Train for fewer epochs initially (20-30)
+- Close other applications to free up RAM
+- Be patient - CPU training takes longer but works fine
+
+**5. Recommended Workflow:**
+1. Start with 50-100 training images
+2. Use nano model size
+3. Train for 10-20 epochs to test
+4. Gradually increase dataset size
+5. Monitor memory usage
+
+### 10.2 CPU vs GPU Comparison
+
+| Aspect | CPU (Your System) | GPU |
+|--------|------------------|-----|
+| Training Speed | Slow (hours/epoch) | Fast (minutes/epoch) |
+| Batch Size | 4-8 | 16-32 |
+| Model Size | Nano/Small | Small/Medium/Large |
+| Input Size | 416x416 | 640x640 |
+| Memory | 4-8GB RAM | 4-8GB VRAM |
+| Cost | Free (you have it) | Requires GPU |
+
+**Note**: CPU training is perfectly fine for learning and small projects. It just takes longer.
+
+---
+
+## 11. Troubleshooting
+
+### 11.1 Common Issues
 
 #### Issue: Python Not Found
 **Error**: `'python' is not recognized as an internal or external command`
@@ -653,14 +787,28 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    print(torch.cuda.is_available())
    ```
 
-#### Issue: Out of Memory
-**Error**: `RuntimeError: CUDA out of memory`
+#### Issue: Out of Memory (CPU)
+**Error**: `RuntimeError: [enforce fail at alloc_cpu.cpp:XX] DefaultCPUAllocator: can't allocate memory`
 
 **Solutions**:
-1. Reduce batch size in config
-2. Use smaller model size
-3. Enable gradient checkpointing
-4. Use CPU if GPU memory is insufficient
+1. Reduce batch size to 2-4
+2. Use smaller model size ("n" nano)
+3. Reduce input image size (416x416 or 320x320)
+4. Close other applications to free RAM
+5. Reduce num_workers to 1-2
+6. Use gradient accumulation instead of large batches
+
+#### Issue: Training Too Slow (CPU)
+**Problem**: Training takes very long on CPU
+
+**Solutions**:
+1. This is normal for CPU training - be patient
+2. Use smaller dataset for initial testing
+3. Use smaller model (nano size)
+4. Reduce input image size
+5. Train for fewer epochs initially
+6. Consider using pre-trained models (transfer learning)
+7. Train overnight or during breaks
 
 #### Issue: Import Errors
 **Error**: `ModuleNotFoundError: No module named 'xxx'`
@@ -691,7 +839,7 @@ python verify_setup.py
 
 ---
 
-## 11. Quick Start Checklist
+## 12. Quick Start Checklist
 
 ### Setup Checklist
 
@@ -725,7 +873,7 @@ python verify_setup.py
 
 ---
 
-## 12. Additional Resources
+## 13. Additional Resources
 
 ### 12.1 Useful Commands
 
@@ -787,7 +935,7 @@ jupyter notebook
 
 ---
 
-## 13. Verification Scripts
+## 14. Verification Scripts
 
 ### 13.1 Complete Verification Script
 
@@ -828,7 +976,7 @@ Run with: `python quick_test.py`
 
 ---
 
-## 14. Environment Variables (Optional)
+## 15. Environment Variables (Optional)
 
 ### 14.1 Set Environment Variables
 
@@ -852,7 +1000,7 @@ export PYTHONPATH=/path/to/apple-detection
 
 ---
 
-## 15. Summary
+## 16. Summary
 
 ### Setup Complete When:
 - ✅ Virtual environment created and activated

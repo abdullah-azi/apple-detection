@@ -1,0 +1,139 @@
+# Configuration for Google Colab
+# Optimized for Colab's free T4 GPU (16GB VRAM)
+
+# Data Configuration
+data:
+  root_dir: "/content/apple-detection/data"
+  images:
+    train: "/content/apple-detection/data/images/train"
+    val: "/content/apple-detection/data/images/val"
+    test: "/content/apple-detection/data/images/test"
+  annotations:
+    train: "/content/apple-detection/data/annotations/train"
+    val: "/content/apple-detection/data/annotations/val"
+    test: "/content/apple-detection/data/annotations/test"
+  annotation_format: "yolo"
+  class_names: ["apple"]
+  num_classes: 1
+
+# Model Configuration (GPU-optimized)
+model:
+  architecture: "yolo"
+  version: "v5"
+  size: "s"  # Small - good balance for Colab GPU
+  pretrained: true
+  input_size: [640, 640]  # Standard YOLO size for better accuracy
+  normalize: true
+  normalization_mean: [0.485, 0.456, 0.406]
+  normalization_std: [0.229, 0.224, 0.225]
+
+# Training Configuration (GPU-optimized)
+training:
+  num_epochs: 100  # Can train longer with GPU
+  batch_size: 16  # Larger batch size for GPU
+  num_workers: 4  # More workers for faster data loading
+  pin_memory: true  # Enable for GPU
+  learning_rate: 0.001
+  lr_scheduler: "cosine"
+  lr_warmup: true
+  lr_warmup_epochs: 3
+  optimizer: "adam"
+  weight_decay: 0.0005
+  gradient_clip: 10.0
+  
+  # Loss configuration
+  loss:
+    type: "combined"
+    localization_weight: 1.0
+    classification_weight: 1.0
+    confidence_weight: 1.0
+  
+  # Validation
+  val_frequency: 1
+  val_batch_size: 16
+  
+  # Checkpointing
+  save_checkpoint: true
+  checkpoint_frequency: 5
+  save_best_only: true
+  monitor_metric: "val_loss"
+  monitor_mode: "min"
+  
+  # Early stopping
+  early_stopping: true
+  early_stopping_patience: 15
+  early_stopping_min_delta: 0.001
+
+# Evaluation Configuration
+evaluation:
+  metrics: ["iou", "precision", "recall"]
+  iou_threshold: 0.5
+  confidence_threshold: 0.25
+  save_visualizations: true
+  visualization_format: "png"
+
+# Inference Configuration
+inference:
+  checkpoint_path: "/content/apple-detection/checkpoints/best_model.pth"
+  device: "cuda"  # Use GPU for inference
+  confidence_threshold: 0.25
+  nms_threshold: 0.45
+  max_detections: 100
+  input_size: [640, 640]
+
+# Preprocessing Configuration
+preprocessing:
+  resize:
+    enabled: true
+    target_size: [640, 640]
+    maintain_aspect_ratio: false
+  normalize: true
+  normalization_method: "imagenet"
+
+# Augmentation Configuration (full for GPU)
+augmentation:
+  enabled: true
+  horizontal_flip:
+    enabled: true
+    probability: 0.5
+  rotation:
+    enabled: true  # Enable rotation for GPU
+    probability: 0.5
+    max_angle: 15
+  scale:
+    enabled: true
+    probability: 0.5
+    min_scale: 0.8
+    max_scale: 1.2  # Larger range for GPU
+  brightness:
+    enabled: true
+    probability: 0.5
+  contrast:
+    enabled: true
+    probability: 0.5
+  saturation:
+    enabled: true  # Enable for GPU
+
+# Path Configuration
+paths:
+  data_root: "/content/apple-detection/data"
+  checkpoints_dir: "/content/apple-detection/checkpoints"
+  results_dir: "/content/apple-detection/results"
+  logs_dir: "/content/apple-detection/logs"
+
+# Hardware Configuration (GPU-optimized)
+hardware:
+  device: "cuda"  # Use GPU
+  num_workers: 4  # More workers for faster data loading
+  pin_memory: true  # Enable for GPU
+  mixed_precision: true  # Use FP16 for faster training
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  log_file: "/content/apple-detection/logs/training.log"
+  log_every_n_steps: 10
+  log_every_n_epochs: 1
+

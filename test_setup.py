@@ -22,14 +22,25 @@ def test_config_loading():
     """Test configuration loading."""
     try:
         import yaml
-        config_path = Path("configs/config.yaml")
-        if config_path.exists():
+        # Check for CPU config first (recommended for CPU-only systems)
+        config_paths = [
+            Path("configs/config_cpu.yaml"),
+            Path("configs/config.yaml")
+        ]
+        
+        config_path = None
+        for path in config_paths:
+            if path.exists():
+                config_path = path
+                break
+        
+        if config_path:
             with open(config_path) as f:
                 config = yaml.safe_load(f)
-            print("✅ Configuration file loaded")
+            print(f"✅ Configuration file loaded: {config_path}")
             return True
         else:
-            print("⚠️  Configuration file not found (create configs/config.yaml)")
+            print("⚠️  Configuration file not found (create configs/config_cpu.yaml or configs/config.yaml)")
             return False
     except Exception as e:
         print(f"❌ Error loading config: {e}")

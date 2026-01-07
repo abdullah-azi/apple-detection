@@ -1,3 +1,8 @@
+# Requirements for Apple Detection Project
+# Compatible with Python 3.8+ (tested with Python 3.13.7)
+# For CPU-only systems, install PyTorch separately:
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
 # Core Dependencies
 torch>=2.0.0
 torchvision>=0.15.0

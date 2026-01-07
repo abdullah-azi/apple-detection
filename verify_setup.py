@@ -6,7 +6,14 @@ def check_python_version():
     """Check Python version."""
     version = sys.version_info
     if version.major >= 3 and version.minor >= 8:
-        print(f"✅ Python {version.major}.{version.minor}.{version.micro}")
+        version_str = f"{version.major}.{version.minor}.{version.micro}"
+        print(f"✅ Python {version_str}")
+        
+        # Special note for Python 3.13
+        if version.major == 3 and version.minor == 13:
+            print("   ⚠️  Python 3.13 is very new - some packages may need updates")
+            print("   💡 If you encounter issues, consider using Python 3.11 or 3.12")
+        
         return True
     else:
         print(f"❌ Python {version.major}.{version.minor}.{version.micro} (Need 3.8+)")
