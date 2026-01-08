@@ -57,6 +57,9 @@ data/splits/*
 !data/annotations/.gitkeep
 !data/splits/.gitkeep
 
+# Dataset directory (large files)
+fruit-detection-dataset/
+
 # Logs
 *.log
 logs/
@@ -68,4 +71,3 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
-

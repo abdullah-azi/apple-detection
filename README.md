@@ -1,251 +1,415 @@
-# 🍎 Apple Detection Using Object Detection
+# Apple Detection with YOLO
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-Latest-orange.svg)](https://pytorch.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-A comprehensive computer vision project focused on building a basic object detection system to automatically identify and localize apples in images. This project emphasizes learning the complete computer vision pipeline—from dataset preparation to training, evaluation, and inference.
+A YOLO (You Only Look Once) object detection model trained to detect apples in images. This project is designed to run on Google Colab and can be easily saved to GitHub.
 
 ## 📋 Table of Contents
 
 - [Overview](#overview)
-- [Features](#features)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
 - [Dataset](#dataset)
-- [Training](#training)
-- [Evaluation](#evaluation)
-- [Inference](#inference)
+- [Project Structure](#project-structure)
+- [Setup Instructions](#setup-instructions)
+  - [Google Colab Setup](#google-colab-setup)
+  - [GitHub Repository Setup](#github-repository-setup)
+- [Training the Model](#training-the-model)
+- [Model Evaluation](#model-evaluation)
+- [Usage](#usage)
 - [Results](#results)
-- [Technologies](#technologies)
-- [Learning Objectives](#learning-objectives)
 - [Contributing](#contributing)
+- [License](#license)
 
 ## 🎯 Overview
 
-This project implements a single-class object detection system that:
+This project implements a YOLO-based object detection model specifically trained to detect apples in images. The model is built using YOLOv8 and trained on a comprehensive fruit detection dataset. While the dataset includes multiple fruit classes (Apple, Banana, Grape, Orange, Pineapple, Watermelon), this project focuses on apple detection.
 
-- **Detects** whether apples are present in images
-- **Localizes** apples by drawing bounding boxes around them
-- **Assigns** confidence scores to each detected apple
+### Key Features
 
-> **Note**: This is a learning-focused project designed to understand object detection fundamentals rather than achieve production-level performance.
+- **YOLOv8 Architecture**: Utilizes the latest YOLO architecture for fast and accurate object detection
+- **Google Colab Compatible**: Fully configured to run on Google Colab with GPU support
+- **Comprehensive Dataset**: Trained on 8,479 annotated images
+- **Easy GitHub Integration**: Simple setup to save and version control your trained models
 
-## ✨ Features
+## 📦 Dataset
 
-- 🔍 Single-class object detection (apples)
-- 📦 Support for multiple annotation formats (YOLO, Pascal VOC, COCO)
-- 🎨 Data augmentation pipeline
-- 📊 Comprehensive evaluation metrics (IoU, Precision, Recall, mAP)
-- 🖼️ Visualization tools for predictions
-- 💾 Model checkpointing and resume training
-- 🚀 Easy-to-use inference pipeline
+The dataset is located in the `fruit-detection-dataset/` directory and contains:
+
+- **Total Images**: 8,479 images
+- **Format**: YOLOv8 format (images + corresponding annotation files)
+- **Classes**: 6 fruit classes (Apple, Banana, Grape, Orange, Pineapple, Watermelon)
+- **Splits**:
+  - Training: ~7,108 images
+  - Validation: ~914 images
+  - Test: ~457 images
+
+### Dataset Structure
+
+```
+fruit-detection-dataset/
+└── Fruits-detection/
+    ├── train/
+    │   ├── images/
+    │   └── labels/
+    ├── valid/
+    │   ├── images/
+    │   └── labels/
+    ├── test/
+    │   ├── images/
+    │   └── labels/
+    ├── data.yaml
+    └── yolov8s.pt (pretrained model)
+```
+
+### Dataset Preprocessing
+
+The dataset has been preprocessed with:
+- Auto-orientation of pixel data (EXIF-orientation stripping)
+- Resize to 640x640 (Stretch)
+- 50% probability of horizontal flip augmentation
 
 ## 📁 Project Structure
 
 ```
 apple-detection/
-├── data/
-│   ├── images/          # Training/validation/test images
-│   ├── annotations/     # Bounding box annotations
-│   └── splits/          # Train/val/test split files
-├── src/                 # Source code
-│   ├── dataset.py       # Dataset class and data loading
-│   ├── model.py         # Model architecture
-│   ├── train.py         # Training script
-│   ├── evaluate.py      # Evaluation metrics
-│   ├── inference.py     # Inference on new images
-│   └── utils.py         # Helper functions
-├── configs/             # Configuration files
-├── checkpoints/          # Saved model weights
-├── results/             # Output visualizations
-├── notebooks/            # Jupyter notebooks
-├── Documents/            # Project documentation
-└── README.md
+├── README.md                          # This file
+├── .gitignore                         # Git ignore rules
+├── fruit-detection-dataset/           # Dataset directory
+│   └── Fruits-detection/              # Main dataset folder
+│       ├── train/                     # Training images and labels
+│       ├── valid/                     # Validation images and labels
+│       ├── test/                      # Test images and labels
+│       ├── data.yaml                  # Dataset configuration
+│       └── yolov8s.pt                 # Pretrained YOLOv8 model
+├── checkpoints/                       # Saved model checkpoints
+│   └── .gitkeep
+├── results/                           # Training results and outputs
+│   └── .gitkeep
+├── documents/                         # Documentation
+│   └── Repo Cred/
+│       └── set_repo_credentials.md    # GitHub setup guide
+└── notebooks/                         # Jupyter notebooks (if any)
 ```
 
-## 🚀 Getting Started
+## 🚀 Setup Instructions
 
-### Prerequisites
+### Google Colab Setup
 
-- Python 3.8 or higher
-- CUDA-capable GPU (recommended for training)
-- pip or conda package manager
+1. **Open Google Colab**
+   - Go to [Google Colab](https://colab.research.google.com/)
+   - Create a new notebook
 
-### Installation
-
-1. **Clone or navigate to the project directory:**
-   ```bash
-   cd apple-detection
+2. **Mount Google Drive** (if dataset is stored there)
+   ```python
+   from google.colab import drive
+   drive.mount('/content/drive')
    ```
 
-2. **Create a virtual environment (recommended):**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+3. **Install Ultralytics YOLO**
+   ```python
+   !pip install ultralytics
    ```
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
+4. **Upload Dataset**
+   - Option 1: Upload the `fruit-detection-dataset` folder to your Google Drive
+   - Option 2: Clone this repository in Colab:
+   ```python
+   !git clone https://github.com/your-username/apple-detection.git
    ```
 
-### Quick Start
-
-1. **Prepare your dataset:**
-   - Place images in `data/images/`
-   - Place annotations in `data/annotations/`
-   - Create train/val/test splits in `data/splits/`
-
-2. **Configure training parameters:**
-   - Edit `configs/config.yaml` with your settings
-
-3. **Train the model:**
-   ```bash
-   python src/train.py --config configs/config.yaml
+5. **Update data.yaml for Colab**
+   - Update the paths in `data.yaml` to match your Colab environment:
+   ```yaml
+   names:
+     - Apple
+     - Banana
+     - Grape
+     - Orange
+     - Pineapple
+     - Watermelon
+   nc: 6
+   train: /content/drive/MyDrive/apple-detection/fruit-detection-dataset/Fruits-detection/train/images
+   val: /content/drive/MyDrive/apple-detection/fruit-detection-dataset/Fruits-detection/valid/images
+   test: /content/drive/MyDrive/apple-detection/fruit-detection-dataset/Fruits-detection/test/images
    ```
 
-4. **Run inference:**
-   ```bash
-   python src/inference.py --image path/to/image.jpg --checkpoint checkpoints/best_model.pth
+6. **Verify GPU Availability**
+   ```python
+   import torch
+   print(f"CUDA available: {torch.cuda.is_available()}")
+   print(f"GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'None'}")
    ```
 
-## 📊 Dataset
+### GitHub Repository Setup
 
-The dataset should contain:
+To save your trained models and code to GitHub, follow the instructions in `documents/Repo Cred/set_repo_credentials.md`.
 
-- **Images**: Various images of apples in different environments (trees, baskets, markets, etc.)
-- **Annotations**: Bounding box coordinates and class labels
-- **Formats Supported**:
-  - YOLO format (`.txt`)
-  - Pascal VOC format (`.xml`)
-  - COCO format (`.json`)
+#### Quick Setup Steps:
 
-### Dataset Split
+1. **Navigate to your repository**
+   ```powershell
+   cd D:\Drive\colab-projects\apple-detection
+   ```
 
-- **Training set**: For model learning
-- **Validation set**: For hyperparameter tuning
-- **Test set**: For final evaluation
+2. **Set the correct remote** (choose based on your account):
+   
+   **Personal repo (`abdullah-azi`):**
+   ```powershell
+   git remote set-url origin git@github-personal:abdullah-azi/apple-detection.git
+   ```
+   
+   **Work repo (`SerenitysSlave`):**
+   ```powershell
+   git remote set-url origin git@github-second:SerenitysSlave/apple-detection.git
+   ```
 
-## 🏋️ Training
+3. **Set local Git identity**:
+   
+   **Personal repo:**
+   ```powershell
+   git config user.name "abdullah-azi"
+   git config user.email "syed.abdullahazi@gmail.com"
+   ```
+   
+   **Work repo:**
+   ```powershell
+   git config user.name "SerenitysSlave"
+   git config user.email "i221186@nu.edu.pk"
+   ```
 
-The training process includes:
+4. **Verify remote configuration:**
+   ```powershell
+   git remote -v
+   ```
 
-- Image preprocessing (resize, normalize)
-- Data augmentation (flip, scale, brightness)
-- Loss computation (localization + classification)
-- Gradient descent optimization
-- Validation monitoring
-- Checkpoint saving
+## 🏋️ Training the Model
 
-### Training Command
+### Basic Training
 
-```bash
-python src/train.py --config configs/config.yaml
+In Google Colab, use the following code to train your model:
+
+```python
+from ultralytics import YOLO
+
+# Load a pretrained model
+model = YOLO('yolov8s.pt')  # or yolov8n.pt, yolov8m.pt, yolov8l.pt, yolov8x.pt
+
+# Train the model
+results = model.train(
+    data='/content/path/to/data.yaml',
+    epochs=100,
+    imgsz=640,
+    batch=16,
+    name='apple_detection',
+    project='/content/drive/MyDrive/apple-detection/results'
+)
 ```
 
-### Key Hyperparameters
+### Advanced Training Configuration
 
-- Learning rate
-- Batch size
-- Number of epochs
-- Data augmentation settings
-- Model architecture selection
+```python
+from ultralytics import YOLO
 
-## 📈 Evaluation
+# Initialize model
+model = YOLO('yolov8s.pt')
 
-Model performance is evaluated using:
-
-- **IoU (Intersection over Union)**: Measures bounding box accuracy
-- **Precision**: Ratio of correct detections to total detections
-- **Recall**: Ratio of detected apples to total apples
-- **mAP (mean Average Precision)**: Overall detection quality metric
-
-### Evaluation Command
-
-```bash
-python src/evaluate.py --checkpoint checkpoints/best_model.pth --data data/test
+# Train with custom parameters
+results = model.train(
+    data='/content/path/to/data.yaml',
+    epochs=100,
+    imgsz=640,
+    batch=16,
+    device=0,  # GPU device
+    workers=8,
+    patience=50,  # Early stopping patience
+    save=True,
+    save_period=10,  # Save checkpoint every 10 epochs
+    val=True,  # Validate during training
+    plots=True,  # Generate training plots
+    name='apple_detection_v1',
+    project='/content/drive/MyDrive/apple-detection/results',
+    exist_ok=True,  # Overwrite existing project
+    pretrained=True,
+    optimizer='SGD',
+    lr0=0.01,
+    lrf=0.01,
+    momentum=0.937,
+    weight_decay=0.0005,
+    warmup_epochs=3.0,
+    warmup_momentum=0.8,
+    warmup_bias_lr=0.1,
+    box=7.5,
+    cls=0.5,
+    dfl=1.5,
+    hsv_h=0.015,
+    hsv_s=0.7,
+    hsv_v=0.4,
+    degrees=0.0,
+    translate=0.1,
+    scale=0.5,
+    shear=0.0,
+    perspective=0.0,
+    flipud=0.0,
+    fliplr=0.5,
+    mosaic=1.0,
+    mixup=0.0,
+    copy_paste=0.0
+)
 ```
 
-## 🔮 Inference
+### Training Tips
 
-Run detection on new images:
+- **Start with a smaller model** (yolov8n.pt) for faster iteration
+- **Use appropriate batch size** based on your GPU memory (16-32 for Colab)
+- **Monitor training** using TensorBoard or the generated plots
+- **Save checkpoints regularly** to avoid losing progress
+- **Use early stopping** to prevent overfitting
 
-```bash
-python src/inference.py \
-    --image path/to/image.jpg \
-    --checkpoint checkpoints/best_model.pth \
-    --output results/detection.jpg \
-    --confidence 0.5
+## 📊 Model Evaluation
+
+After training, evaluate your model:
+
+```python
+from ultralytics import YOLO
+
+# Load your trained model
+model = YOLO('/content/drive/MyDrive/apple-detection/results/apple_detection/weights/best.pt')
+
+# Validate on test set
+metrics = model.val(
+    data='/content/path/to/data.yaml',
+    split='test',
+    imgsz=640,
+    conf=0.25,
+    iou=0.45
+)
+
+# Print metrics
+print(f"mAP50: {metrics.box.map50}")
+print(f"mAP50-95: {metrics.box.map}")
+print(f"Precision: {metrics.box.mp}")
+print(f"Recall: {metrics.box.mr}")
 ```
 
-The output will include:
-- Bounding boxes drawn on the image
-- Confidence scores for each detection
-- Saved visualization in the results folder
+## 💻 Usage
 
-## 📊 Results
+### Inference on Images
 
-Visual results and evaluation metrics are saved in the `results/` directory:
+```python
+from ultralytics import YOLO
 
-- Detection visualizations
-- Evaluation reports
-- Training curves
-- Comparison plots
+# Load trained model
+model = YOLO('/path/to/best.pt')
 
-## 🛠️ Technologies
+# Run inference
+results = model('/path/to/image.jpg')
 
-- **Python**: Core programming language
-- **PyTorch / TensorFlow**: Deep learning framework
-- **OpenCV**: Image processing
-- **NumPy**: Numerical computations
-- **Matplotlib / Seaborn**: Visualization
-- **Pillow**: Image handling
-- **Albumentations**: Data augmentation (optional)
+# Display results
+results[0].show()
 
-## 🎓 Learning Objectives
+# Save results
+results[0].save('/path/to/output.jpg')
+```
 
-By completing this project, you will understand:
+### Inference on Videos
 
-- ✅ How object detection differs from image classification
-- ✅ Working with labeled datasets containing bounding boxes
-- ✅ Training detection models from scratch or using transfer learning
-- ✅ Evaluating detection performance using standard metrics
-- ✅ Running inference on new, unseen images
-- ✅ The complete computer vision pipeline
+```python
+from ultralytics import YOLO
 
-### Transferable Skills
+# Load trained model
+model = YOLO('/path/to/best.pt')
 
-Once you can detect apples, you can apply the same principles to:
-- 🚗 Car detection
-- 👤 Face detection
-- 🏥 Medical anomaly detection
-- And many more applications!
+# Run inference on video
+results = model('/path/to/video.mp4')
 
-## 📝 Scope & Limitations
+# Save output video
+results[0].save('/path/to/output.mp4')
+```
 
-- **Single-class detection**: Only apples (not multiple fruit types)
-- **Performance**: Depends on dataset quality and size
-- **Optimization**: Not optimized for real-time or production deployment
-- **Purpose**: Educational and learning-focused
+### Filter for Apple Detection Only
 
-> **Remember**: This is a learning project, not a startup pitch. The goal is understanding, not perfection.
+If you want to detect only apples (class 0), you can filter the results:
 
-## 🤝 Contributing
+```python
+from ultralytics import YOLO
 
-This is a learning project, but suggestions and improvements are welcome! Feel free to:
+# Load trained model
+model = YOLO('/path/to/best.pt')
 
-- Report issues
-- Suggest enhancements
-- Share your results
-- Improve documentation
+# Run inference with class filter (Apple is class 0)
+results = model('/path/to/image.jpg', classes=[0])
 
-## 📚 Additional Resources
+# Display results
+results[0].show()
+```
 
-- [Project Overview](Documents/Project_Overview.md) - Detailed project documentation
-- [Object Detection Tutorials](https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html)
-- [YOLO Paper](https://arxiv.org/abs/1506.02640)
-- [COCO Dataset](https://cocodataset.org/)
+### Export Model
+
+Export your model to different formats:
+
+```python
+from ultralytics import YOLO
+
+# Load trained model
+model = YOLO('/path/to/best.pt')
+
+# Export to ONNX
+model.export(format='onnx')
+
+# Export to TensorRT
+model.export(format='engine')
+
+# Export to CoreML
+model.export(format='coreml')
+```
+
+## 📈 Results
+
+Training results will be saved in the `results/` directory, including:
+
+- **Training curves**: Loss plots, mAP curves
+- **Validation metrics**: Precision, Recall, mAP50, mAP50-95
+- **Confusion matrix**: Class-wise performance
+- **Sample predictions**: Validation set predictions
+- **Model weights**: `best.pt` (best validation) and `last.pt` (last epoch)
+
+### Expected Performance
+
+With proper training, you should expect:
+- **mAP50**: > 0.85 for apple detection
+- **Precision**: > 0.80
+- **Recall**: > 0.75
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+1. **CUDA Out of Memory**
+   - Reduce batch size
+   - Use a smaller model (yolov8n.pt instead of yolov8s.pt)
+   - Reduce image size
+
+2. **Dataset Path Errors**
+   - Verify paths in `data.yaml` are correct
+   - Ensure paths use forward slashes (`/`) in Colab
+   - Check that images and labels are in correct directories
+
+3. **GitHub Push Issues**
+   - Verify SSH keys are set up correctly
+   - Check remote URL matches your account
+   - Ensure Git identity is configured correctly
+
+4. **Model Not Saving**
+   - Check disk space in Colab
+   - Verify save path is writable
+   - Ensure `save=True` in training parameters
+
+## 📝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 License
 
@@ -253,13 +417,14 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
-- Pre-trained models and architectures from the computer vision community
-- Dataset creators and contributors
-- Open-source tools and libraries
+- [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) for the YOLO implementation
+- The fruit detection dataset creators
+- Google Colab for providing free GPU resources
+
+## 📧 Contact
+
+For questions or issues, please open an issue on GitHub.
 
 ---
 
-**Happy Learning! 🍎🔍**
-
-> *"Why are bounding boxes always slightly off-center? It's not personal. It's math."*
-
+**Happy Training! 🍎**
